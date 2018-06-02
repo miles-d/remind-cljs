@@ -40,16 +40,24 @@
 (defn reset-topic! [topic-id]
   (swap! app-state reset-topic topic-id))
 
+(defn review-button [topic-id]
+  [:button
+        {:on-click #(review-topic! topic-id)}
+             "Review!"])
+
+(defn reset-button [topic-id]
+  [:button
+     {:on-click (fn []
+                  (if (js/confirm "Are you sure to reset topic data?")
+                    (reset-topic! topic-id)))}
+     "Reset!"])
+
 (defn remind-row [[topic-id topic-data]]
   [:tr
    [:td topic-id]
    [:td
-    [:button
-     {:on-click #(review-topic! topic-id)}
-     "Review!"]
-    [:button
-     {:on-click #(reset-topic! topic-id)}
-     "Reset!"]]
+    [review-button topic-id]
+    [reset-button topic-id]]
    [:td (or (:last-review-date topic-data) "Never")]
    [:td (:review-count topic-data)]])
 
