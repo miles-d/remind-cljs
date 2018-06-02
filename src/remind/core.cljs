@@ -28,7 +28,8 @@
 
 (defn now []
   (-> (.toISOString (js/Date.))
-      (clojure.string/replace , #"[TZ]" " ")))
+      (clojure.string/replace , #"[TZ]" " ")
+      (.slice , 0 -3)))
 
 (defn review-topic! [topic-id]
   (swap! app-state update-last-review-date topic-id (now))
