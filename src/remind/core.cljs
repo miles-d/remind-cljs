@@ -2,44 +2,78 @@
     (:require [reagent.core :as reagent :refer [atom]]))
 
 (enable-console-print!)
+(def log (.-log js/console))
 
-(println "This text is printed from src/remind/core.cljs. Go ahead and edit it and see reloading in action.")
+(defonce app-state (atom {:topics {"hello" {:last-review-date nil
+                                            :review-count 0}
+                                   "good-bye" {:last-review-date nil
+                                               :review-count 0}}}))
 
-;; define your app data so that it doesn't get over-written on reload
+(def empty-topic {:last-review-date nil :review-count 0})
 
-(defonce app-state (atom {:text "Hello world!"
-                          :topics #{{:title "hello"}
-                                    {:title "good-bye"}}}))
-
-;; return new state
 (defn add-topic [app-state title]
-  (let [old-topics (:topics app-state)
-        new-topic {:title title}
-        new-topics (conj old-topics new-topic)
-        new-state (assoc app-state :topics new-topics)]
-    new-state))
+  (assoc-in app-state [:topics title] empty-topic))
 
 (defn add-topic! [title]
   (swap! app-state #(add-topic % title)))
 
+(defn get-topic [app-state title]
+  (get-in app-state [:topics title]))
 
-(defn list-item [title]
-  [:li title
-   [:button "Click me!"]])
+(defn update-last-review-date [app-state topic-id now]
+  (assoc-in app-state [:topics topic-id :last-review-date] now))
+
+(defn increase-review-count [app-state topic-id]
+  (update-in app-state [:topics topic-id :review-count] inc))
+
+(defn now []
+  (-> (.toISOString (js/Date.))
+      (clojure.string/replace , #"[TZ]" " ")))
+
+(defn review-topic! [topic-id]
+  (swap! app-state update-last-review-date topic-id (now))
+  (swap! app-state increase-review-count topic-id))
+
+(defn reset-topic [app-state topic-id]
+  (assoc-in app-state [:topics topic-id] empty-topic))
+
+(defn reset-topic! [topic-id]
+  (swap! app-state reset-topic topic-id))
+
+(defn remind-row [[topic-id topic-data]]
+  [:tr
+   [:td topic-id]
+   [:td
+    [:button
+     {:on-click #(review-topic! topic-id)}
+     "Review!"]
+    [:button
+     {:on-click #(reset-topic! topic-id)}
+     "Reset!"]]
+   [:td (or (:last-review-date topic-data) "Never")]
+   [:td (:review-count topic-data)]])
+
+(defn remind-table []
+  [:table
+   [:thead
+    [:tr
+     [:th "Title"]
+     [:th "Actions"]
+     [:th "Last review"]
+     [:th "Review count"]]]
+   [:tbody
+    (for [topic (:topics @app-state)]
+      ^{:key (first topic)} [remind-row topic])]]
+  )
 
 (defn remind-app []
   [:div
-   [:h1 (:text @app-state)]
    [:h3 "Remind"]
-   [:ol
-    (for [topic (:topics @app-state)]
-      ^{:key topic} [list-item (:title topic)]
-      )]])
+   [remind-table]])
 
 (reagent/render-component [remind-app]
                           (. js/document (getElementById "app")))
 
-(def log (.-log js/console))
 
 (defn on-js-reload []
   (log @app-state)
