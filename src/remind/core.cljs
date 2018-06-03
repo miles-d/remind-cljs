@@ -41,24 +41,40 @@
 (defn reset-topic! [topic-id]
   (swap! app-state reset-topic topic-id))
 
+(defn delete-topic [app-state topic-id]
+  (update app-state :topics dissoc topic-id))
+
+(defn delete-topic! [topic-id]
+  (swap! app-state delete-topic topic-id))
+
+(defn topic-exists? [topic-id]
+  (not (nil? (get-in @app-state [:topics topic-id]))))
+
 (defn review-button [topic-id]
   [:button
-        {:on-click #(review-topic! topic-id)}
-             "Review!"])
+   {:on-click #(review-topic! topic-id)}
+   "Review"])
 
 (defn reset-button [topic-id]
   [:button
      {:on-click (fn []
                   (if (js/confirm "Are you sure to reset topic data?")
                     (reset-topic! topic-id)))}
-     "Reset!"])
+     "Reset"])
+
+(defn delete-button [topic-id]
+  [:button
+   {:on-click #(if (js/confirm "Are you sure to delete this topic?")
+                 (delete-topic! topic-id))}
+   "Delete"])
 
 (defn remind-row [[topic-id topic-data]]
   [:tr
    [:td topic-id]
    [:td
     [review-button topic-id]
-    [reset-button topic-id]]
+    [reset-button topic-id]
+    [delete-button topic-id]]
    [:td (or (:last-review-date topic-data) "Never")]
    [:td (:review-count topic-data)]])
 
@@ -75,10 +91,35 @@
       ^{:key (first topic)} [remind-row topic])]]
   )
 
+(defn new-topic-input []
+  (let [input-value (atom "")
+        error-message (atom "")]
+    (fn []
+      [:form#new-topic-form
+       [:label "New topic: "
+        [:input {:value @input-value
+                 :on-change (fn [event]
+                              (let [new-value (.-value (.-target event))]
+                                (reset! error-message "")
+                                (reset! input-value new-value)))}]]
+       [:button {:on-click (fn [event]
+                             (do
+                               (.preventDefault event)
+                               (if (and
+                                     (not= "" @input-value)
+                                     (not (topic-exists? @input-value)))
+                                 (do
+                                   (add-topic! @input-value)
+                                   (reset! input-value ""))
+                                 (reset! error-message "Topic with this title already exists!")))) }
+        "Add!"]
+       [:span#new-topic-error-message @error-message]])))
+
 (defn remind-app []
   [:div
    [:h3 "Remind"]
-   [remind-table]])
+   [remind-table]
+   [new-topic-input]])
 
 (reagent/render-component [remind-app]
                           (. js/document (getElementById "app")))

@@ -1,6 +1,7 @@
 /* some style */
 body {
   background-color: white;
+  font-family: sans-serif;
 }
 
 table#topics-table {
@@ -13,4 +14,18 @@ table#topics-table td {
 
 table#topics-table .last-review-column {
   min-width: 28vw;
+}
+
+#new-topic-form {
+  margin-top: 1em;
+}
+
+#new-topic-form button {
+  margin-left: 1em;
+}
+
+#new-topic-error-message {
+  margin-left: 1em;
+  color: red;
+  font-size: 0.8em;
 }
