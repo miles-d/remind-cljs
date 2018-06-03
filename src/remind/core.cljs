@@ -106,7 +106,7 @@
 
 (defn remind-row [[topic-id topic-data]]
   [:tr
-   [:td topic-id]
+   [:td.title-column topic-id]
    [:td
     [review-button topic-id]
     [reset-button topic-id]
@@ -119,7 +119,7 @@
   [:table#topics-table
    [:thead
     [:tr
-     [:th "Title"]
+     [:th.title-column "Title"]
      [:th "Actions"]
      [:th.last-review-column "Last review"]
      [:th "Time since last review"]
