@@ -64,7 +64,7 @@
     (- (.getTime (js/Date. time1))
        (.getTime (js/Date. time2)))))
 
-(defn human-time [date]
+(defn human-elapsed-time [date]
   (if (nil? date)
     date
     (let [seconds (quot date 1000)
@@ -106,7 +106,7 @@
 
 (defn last-review-time-row [topic-data now]
   [:td {:title (or (my-format-date (:last-review-date topic-data)) "Never reviewed")}
-   (or (human-time (time-diff @timer (:last-review-date topic-data)))
+   (or (human-elapsed-time (time-diff @timer (:last-review-date topic-data)))
            "-")])
 
 (defn remind-row [[topic-id topic-data]]
