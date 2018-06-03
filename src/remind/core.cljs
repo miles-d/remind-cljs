@@ -117,8 +117,8 @@
 (defn remind-app []
   [:div
    [:h3 "Remind"]
-   [remind-table]
-   [new-topic-input]])
+   [new-topic-input]
+   [remind-table]])
 
 (reagent/render-component [remind-app]
                           (. js/document (getElementById "app")))
