@@ -70,15 +70,18 @@
     (let [seconds (quot date 1000)
           minutes (quot seconds 60)
           hours (quot minutes 60)
-          days (quot hours 24)]
-      (cond
-        (< seconds 60) "< 1 minute"
-        (= 1 minutes) (str "1 minute")
-        (< minutes 120) (str minutes " minutes")
-        (= hours 24) (str "1 day")
-        (< hours 24) (str hours " hours")
-        (< days 30) (str days " days")
-        :else (str days " days")))))
+          days (quot hours 24)
+          weeks (quot days 7)]
+      (str
+        (cond
+          (< seconds 60) "< 1 minute"
+          (= 1 minutes) (str "1 minute")
+          (< minutes 120) (str minutes " minutes")
+          (= hours 24) (str "1 day")
+          (< hours 24) (str hours " hours")
+          (< days 14) (str days " days")
+          :else (str weeks " weeks"))
+        " ago"))))
 
 (defn date-experiment! []
   (swap! app-state #(assoc-in % [:topics "hallo" :last-review-date] (js/Date. "2018-05-01T11:54"))))
@@ -102,7 +105,8 @@
    "Delete"])
 
 (defn last-review-time-row [topic-data now]
-  [:td (or (human-time (time-diff @timer (:last-review-date topic-data)))
+  [:td {:title (or (my-format-date (:last-review-date topic-data)) "Never reviewed")}
+   (or (human-time (time-diff @timer (:last-review-date topic-data)))
            "-")])
 
 (defn remind-row [[topic-id topic-data]]
@@ -112,7 +116,6 @@
     [review-button topic-id]
     [reset-button topic-id]
     [delete-button topic-id]]
-   [:td (or (my-format-date (:last-review-date topic-data)) "Never")]
    [last-review-time-row topic-data]
    [:td.review-count-column (:review-count topic-data)]])
 
@@ -123,7 +126,6 @@
      [:th.title-column "Title"]
      [:th "Actions"]
      [:th.last-review-column "Last review"]
-     [:th "Time since last review"]
      [:th.review-count-column "Review count"]]]
    [:tbody
     (for [topic (:topics @app-state)]

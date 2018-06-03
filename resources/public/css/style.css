@@ -46,10 +46,6 @@ table#topics-table button {
 
 /* Columns */
 
-table#topics-table .last-review-column {
-  min-width: 17vw;
-}
-
 table#topics-table .title-column {
   max-width: 16vw;
 }
