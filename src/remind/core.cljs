@@ -112,16 +112,9 @@
    {:on-click #(review-topic! topic-id)}
    "Contacted!"])
 
-(defn reset-button [topic-id]
-  [:button
-     {:on-click (fn []
-                  (if (js/confirm "Are you sure to reset topic data?")
-                    (reset-topic! topic-id)))}
-     "Reset"])
-
 (defn delete-button [topic-id]
   [:button
-   {:on-click #(if (js/confirm "Are you sure to delete this topic?")
+   {:on-click #(if (js/confirm "Are you sure to delete this entry?")
                  (delete-topic! topic-id))}
    "Delete"])
 
@@ -151,7 +144,6 @@
             "")]
    [:td
     [review-button topic-id]
-    [reset-button topic-id]
     [delete-button topic-id]]
    [last-review-cell topic-data]
    [next-review-cell topic-data]
