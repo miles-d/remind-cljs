@@ -4,10 +4,12 @@
 (enable-console-print!)
 (def log (.-log js/console))
 
-(defonce app-state (atom {:topics {"hello" {:last-review-date nil
-                                            :review-count 0}
-                                   "good-bye" {:last-review-date nil
-                                               :review-count 0}}}))
+(defonce app-state (atom (cljs.reader/read-string (.getItem js/localStorage "appStateV1"))))
+
+(add-watch app-state
+           :save-to-local-storage
+           (fn [_ _ _ new-state]
+             (.setItem js/localStorage "appStateV1" new-state)))
 
 (def empty-topic {:last-review-date nil :review-count 0})
 
