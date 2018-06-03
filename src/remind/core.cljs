@@ -8,7 +8,7 @@
 (defonce timer (atom (js/Date.)))
 (defonce timer-updater (js/setInterval
                          #(reset! timer (js/Date.))
-                         200))
+                         1000))
 
 (add-watch app-state
            :save-to-local-storage
@@ -32,12 +32,12 @@
 (defn increase-review-count [app-state topic-id]
   (update-in app-state [:topics topic-id :review-count] inc))
 
-(defn my-format-date [date]
-  (if (not date)
-    date ;; pass through falsey value without formatting
-    (-> (.toISOString (js/Date. date))
-        (clojure.string/replace , #"[TZ]" " ")
-        (.slice , 0 -3))))
+(defn my-format-date [datetime]
+  (if (not datetime)
+    datetime ;; pass through falsey value without formatting
+    (let [date (.toLocaleDateString datetime)
+          time (.toLocaleTimeString datetime)]
+      (str date " " time))))
 
 (defn review-topic! [topic-id]
   (swap! app-state update-last-review-date topic-id (js/Date.))
@@ -65,19 +65,20 @@
        (.getTime (js/Date. time2)))))
 
 (defn human-time [date]
-  (let [seconds (quot date 1000)
-        minutes (quot seconds 60)
-        hours (quot minutes 60)
-        days (quot hours 24)]
-    (cond
-      (= seconds 1) (str "1 second")
-      (< seconds 60) (str seconds " seconds")
-      (= 1 minutes) (str "1 minute")
-      (< minutes 120) (str minutes " minutes")
-      (= hours 24) (str "1 day")
-      (< hours 24) (str hours " hours")
-      (< days 30) (str days " days")
-      :else (str days " days"))))
+  (if (nil? date)
+    date
+    (let [seconds (quot date 1000)
+          minutes (quot seconds 60)
+          hours (quot minutes 60)
+          days (quot hours 24)]
+      (cond
+        (< seconds 60) "< 1 minute"
+        (= 1 minutes) (str "1 minute")
+        (< minutes 120) (str minutes " minutes")
+        (= hours 24) (str "1 day")
+        (< hours 24) (str hours " hours")
+        (< days 30) (str days " days")
+        :else (str days " days")))))
 
 (defn date-experiment! []
   (swap! app-state #(assoc-in % [:topics "hallo" :last-review-date] (js/Date. "2018-05-01T11:54"))))
@@ -113,7 +114,7 @@
     [delete-button topic-id]]
    [:td (or (my-format-date (:last-review-date topic-data)) "Never")]
    [last-review-time-row topic-data]
-   [:td (:review-count topic-data)]])
+   [:td.review-count-column (:review-count topic-data)]])
 
 (defn remind-table []
   [:table#topics-table
@@ -123,7 +124,7 @@
      [:th "Actions"]
      [:th.last-review-column "Last review"]
      [:th "Time since last review"]
-     [:th "Review count"]]]
+     [:th.review-count-column "Review count"]]]
    [:tbody
     (for [topic (:topics @app-state)]
       ^{:key (first topic)} [remind-row topic])]]
