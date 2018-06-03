@@ -105,13 +105,12 @@
        [:button {:on-click (fn [event]
                              (do
                                (.preventDefault event)
-                               (if (and
-                                     (not= "" @input-value)
-                                     (not (topic-exists? @input-value)))
-                                 (do
-                                   (add-topic! @input-value)
-                                   (reset! input-value ""))
-                                 (reset! error-message "Topic with this title already exists!")))) }
+                               (cond
+                                 (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
+                                 (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
+                                 :else (do
+                                         (add-topic! (clojure.string/trim @input-value))
+                                         (reset! input-value "")))))}
         "Add!"]
        [:span#new-topic-error-message @error-message]])))
 
