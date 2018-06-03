@@ -2,7 +2,30 @@
 body {
   background-color: white;
   font-family: sans-serif;
+  font-size: 14px;
 }
+
+/* New topic form */
+
+#new-topic-form {
+  margin-bottom: 1em;
+}
+
+#new-topic-form button {
+  margin-left: 1em;
+}
+
+#new-topic-error-message {
+  margin-left: 1em;
+  color: red;
+  font-size: 0.8em;
+}
+
+#topic-type-select {
+  margin-left: 1em;
+}
+
+/* Table */
 
 table#topics-table {
   width: 100%;
@@ -17,27 +40,20 @@ table#topics-table td {
 }
 
 table#topics-table button {
+  font-size: 0.8em;
   margin: 0 0.1vw;
 }
 
+/* Columns */
+
 table#topics-table .last-review-column {
-  min-width: 28vw;
+  min-width: 17vw;
 }
 
 table#topics-table .title-column {
-  max-width: 18vw;
+  max-width: 16vw;
 }
 
-#new-topic-form {
-  margin-bottom: 1em;
-}
-
-#new-topic-form button {
-  margin-left: 1em;
-}
-
-#new-topic-error-message {
-  margin-left: 1em;
-  color: red;
-  font-size: 0.8em;
+table#topics-tabble .review-count-column {
+  max-width: 10px;
 }
