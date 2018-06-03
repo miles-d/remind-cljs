@@ -104,7 +104,7 @@
                  (delete-topic! topic-id))}
    "Delete"])
 
-(defn last-review-cell [topic-data now]
+(defn last-review-cell [topic-data]
   [:td {:title (or (my-format-date (:last-review-date topic-data)) "Never reviewed")}
    (or (human-elapsed-time (time-diff @timer (:last-review-date topic-data)))
            "-")])
