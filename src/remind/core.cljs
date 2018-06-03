@@ -75,7 +75,8 @@
   (not (nil? (get-in @app-state [:topics topic-id]))))
 
 (defn time-diff [time1 time2]
-  (if (not time2)
+  (if (or (not time1)
+          (not time2))
     nil
     (- (.getTime (js/Date. time1))
        (.getTime (js/Date. time2)))))
@@ -128,14 +129,13 @@
 (defn next-review-cell [topic]
   (let [interval-days (:interval-days (get topic-types (:type-id topic)))
         next-review-absolute (add-days (:last-review-date topic) interval-days)
-        next-review-relative (human-elapsed-time (time-diff
-                                                   next-review-absolute
-                                                   @timer))]
+        diff-mili (time-diff next-review-absolute @timer)]
     [:td
      {:title (or (my-format-date next-review-absolute))}
-     (if next-review-absolute
-       (str "in " next-review-relative)
-       "-")]))
+     (cond
+       (< diff-mili 0) "Pending!"
+       (not next-review-absolute) "-"
+       :else (str "in " (human-elapsed-time diff-mili)))]))
 
 (defn remind-row [[topic-id topic-data]]
   [:tr
