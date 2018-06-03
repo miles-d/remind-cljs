@@ -177,7 +177,7 @@
         type-id (atom :vip)]
     (fn []
       [:form#new-topic-form
-       [:label "New topic: "
+       [:label "Name: "
         [:input {:value @input-value
                  :on-change (fn [event]
                               (let [new-value (.-value (.-target event))]
