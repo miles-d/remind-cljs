@@ -1,2 +1,16 @@
 /* some style */
+body {
+  background-color: white;
+}
 
+table#topics-table {
+  width: 100%;
+}
+
+table#topics-table td {
+  text-align: center;
+}
+
+table#topics-table .last-review-column {
+  min-width: 28vw;
+}

@@ -63,12 +63,12 @@
    [:td (:review-count topic-data)]])
 
 (defn remind-table []
-  [:table
+  [:table#topics-table
    [:thead
     [:tr
      [:th "Title"]
      [:th "Actions"]
-     [:th "Last review"]
+     [:th.last-review-column "Last review"]
      [:th "Review count"]]]
    [:tbody
     (for [topic (:topics @app-state)]
