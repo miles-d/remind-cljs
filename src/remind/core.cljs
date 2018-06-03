@@ -10,6 +10,19 @@
                          #(reset! timer (js/Date.))
                          1000))
 
+(def topic-types {:vip       {:interval-days 21
+                              :description "Very important people. Contact every three weeks."
+                              :short-description "VIP"}
+                  :important {:interval-days 60
+                              :description "Important people. Contact every two months."
+                              :short-description "Important"}
+                  :regular   {:interval-days (* 30 6)
+                              :description "Most people. Contact every six months."
+                              :short-description "Regular"}
+                  :demoted   {:interval-days 365
+                              :description "Demoted people. Contact once a year, to make sure you still have their correct info."
+                              :short-description "Demoted"}})
+
 (add-watch app-state
            :save-to-local-storage
            (fn [_ _ _ new-state]
@@ -17,11 +30,13 @@
 
 (def empty-topic {:last-review-date nil :review-count 0})
 
-(defn add-topic [app-state title]
-  (assoc-in app-state [:topics title] empty-topic))
+(defn add-topic [app-state title type-id]
+  (-> app-state
+    (assoc-in , [:topics title] empty-topic)
+    (assoc-in , [:topics title :type-id] type-id)))
 
-(defn add-topic! [title]
-  (swap! app-state #(add-topic % title)))
+(defn add-topic! [title type-id]
+  (swap! app-state #(add-topic % title (keyword type-id))))
 
 (defn get-topic [app-state title]
   (get-in app-state [:topics title]))
@@ -64,6 +79,16 @@
     (- (.getTime (js/Date. time1))
        (.getTime (js/Date. time2)))))
 
+(defn add-days [date days]
+  (if (nil? date)
+    date
+    (let [old-mili (.getTime date)
+          mili-to-add (* 86400 1000 days)
+          new-date (js/Date.)]
+      (do
+        (.setTime new-date (+ old-mili mili-to-add))
+        new-date))))
+
 (defn human-elapsed-time [date]
   (if (nil? date)
     date
@@ -72,24 +97,19 @@
           hours (quot minutes 60)
           days (quot hours 24)
           weeks (quot days 7)]
-      (str
-        (cond
-          (< seconds 60) "< 1 minute"
-          (= 1 minutes) (str "1 minute")
-          (< minutes 120) (str minutes " minutes")
-          (= hours 24) (str "1 day")
-          (< hours 24) (str hours " hours")
-          (< days 14) (str days " days")
-          :else (str weeks " weeks"))
-        " ago"))))
-
-(defn date-experiment! []
-  (swap! app-state #(assoc-in % [:topics "hallo" :last-review-date] (js/Date. "2018-05-01T11:54"))))
+      (cond
+        (< seconds 60) "< 1 minute"
+        (= 1 minutes) (str "1 minute")
+        (< minutes 120) (str minutes " minutes")
+        (= hours 24) (str "1 day")
+        (< hours 24) (str hours " hours")
+        (< days 35) (str days " days")
+        :else (str weeks " weeks")))))
 
 (defn review-button [topic-id]
   [:button
    {:on-click #(review-topic! topic-id)}
-   "Review"])
+   "Contacted!"])
 
 (defn reset-button [topic-id]
   [:button
@@ -104,29 +124,48 @@
                  (delete-topic! topic-id))}
    "Delete"])
 
-(defn last-review-cell [topic-data]
-  [:td {:title (or (my-format-date (:last-review-date topic-data)) "Never reviewed")}
-   (or (human-elapsed-time (time-diff @timer (:last-review-date topic-data)))
-           "-")])
+(defn last-review-cell [topic]
+  [:td
+   {:title (or (my-format-date (:last-review-date topic)) "Never reviewed")}
+   (if-let [last-review-date (:last-review-date topic)]
+     (str (human-elapsed-time (time-diff @timer last-review-date)) " ago")
+     "-")])
+
+(defn next-review-cell [topic]
+  (let [interval-days (:interval-days (get topic-types (:type-id topic)))
+        next-review-absolute (add-days (:last-review-date topic) interval-days)
+        next-review-relative (human-elapsed-time (time-diff
+                                                   next-review-absolute
+                                                   @timer))]
+    [:td
+     {:title (or (my-format-date next-review-absolute))}
+     (if next-review-absolute
+       (str "in " next-review-relative)
+       "-")]))
 
 (defn remind-row [[topic-id topic-data]]
   [:tr
    [:td.title-column topic-id]
+   [:td (or (:short-description (get topic-types (:type-id topic-data)))
+            "")]
    [:td
     [review-button topic-id]
     [reset-button topic-id]
     [delete-button topic-id]]
    [last-review-cell topic-data]
+   [next-review-cell topic-data]
    [:td.review-count-column (:review-count topic-data)]])
 
 (defn remind-table []
   [:table#topics-table
    [:thead
     [:tr
-     [:th.title-column "Title"]
+     [:th.title-column "Name"]
+     [:th "Type"]
      [:th "Actions"]
-     [:th.last-review-column "Last review"]
-     [:th.review-count-column "Review count"]]]
+     [:th.last-review-column "Last contact"]
+     [:th "Next contact"]
+     [:th.review-count-column "Times contacted"]]]
    [:tbody
     (for [topic (:topics @app-state)]
       ^{:key (first topic)} [remind-row topic])]]
@@ -134,7 +173,8 @@
 
 (defn new-topic-input []
   (let [input-value (atom "")
-        error-message (atom "")]
+        error-message (atom "")
+        type-id (atom :vip)]
     (fn []
       [:form#new-topic-form
        [:label "New topic: "
@@ -143,6 +183,15 @@
                               (let [new-value (.-value (.-target event))]
                                 (reset! error-message "")
                                 (reset! input-value new-value)))}]]
+       [:br]
+       [:label "Type: "
+        [:select#topic-type-select
+         {:value @type-id
+          :on-change (fn [event]
+                       (reset! type-id (.-value (.-target event))))}
+         (for [[type-id topic-type] topic-types]
+           ^{:key type-id} [:option {:value type-id} (:description topic-type)])]]
+       [:br]
        [:button {:on-click (fn [event]
                              (do
                                (.preventDefault event)
@@ -150,14 +199,14 @@
                                  (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
                                  (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
                                  :else (do
-                                         (add-topic! (clojure.string/trim @input-value))
+                                         (add-topic! (clojure.string/trim @input-value) @type-id)
                                          (reset! input-value "")))))}
         "Add!"]
        [:span#new-topic-error-message @error-message]])))
 
 (defn remind-app []
   [:div
-   [:h3 "Remind"]
+   [:h3 "Stay In Touch"]
    [new-topic-input]
    [remind-table]])
 
@@ -166,7 +215,7 @@
 
 
 (defn on-js-reload []
-  (log @app-state)
+  ; (log @app-state)
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
