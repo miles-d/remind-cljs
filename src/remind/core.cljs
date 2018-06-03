@@ -1,5 +1,6 @@
 (ns remind.core
-    (:require [reagent.core :as reagent :refer [atom]]))
+    (:require [reagent.core :as reagent :refer [atom]]
+              [cljs.reader]))
 
 (enable-console-print!)
 (def log (.-log js/console))
