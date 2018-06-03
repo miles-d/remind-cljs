@@ -8,7 +8,7 @@
 (defonce timer (atom (js/Date.)))
 (defonce timer-updater (js/setInterval
                          #(reset! timer (js/Date.))
-                         100))
+                         200))
 
 (add-watch app-state
            :save-to-local-storage
@@ -61,9 +61,26 @@
 (defn time-diff [time1 time2]
   (if (not time2)
     nil
-    (str (quot (- (.getTime (js/Date. time1))
-                  (.getTime (js/Date. time2)))
-               1000) " seconds")))
+    (- (.getTime (js/Date. time1))
+       (.getTime (js/Date. time2)))))
+
+(defn human-time [date]
+  (let [seconds (quot date 1000)
+        minutes (quot seconds 60)
+        hours (quot minutes 60)
+        days (quot hours 24)]
+    (cond
+      (= seconds 1) (str "1 second")
+      (< seconds 60) (str seconds " seconds")
+      (= 1 minutes) (str "1 minute")
+      (< minutes 120) (str minutes " minutes")
+      (= hours 24) (str "1 day")
+      (< hours 24) (str hours " hours")
+      (< days 30) (str days " days")
+      :else (str days " days"))))
+
+(defn date-experiment! []
+  (swap! app-state #(assoc-in % [:topics "hallo" :last-review-date] (js/Date. "2018-05-01T11:54"))))
 
 (defn review-button [topic-id]
   [:button
@@ -84,7 +101,7 @@
    "Delete"])
 
 (defn last-review-time-row [topic-data now]
-  [:td (or (time-diff @timer (:last-review-date topic-data))
+  [:td (or (human-time (time-diff @timer (:last-review-date topic-data)))
            "-")])
 
 (defn remind-row [[topic-id topic-data]]
