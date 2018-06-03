@@ -5,6 +5,10 @@
 (def log (.-log js/console))
 
 (defonce app-state (atom (cljs.reader/read-string (.getItem js/localStorage "appStateV1"))))
+(defonce timer (atom (js/Date.)))
+(defonce timer-updater (js/setInterval
+                         #(reset! timer (js/Date.))
+                         100))
 
 (add-watch app-state
            :save-to-local-storage
@@ -28,13 +32,15 @@
 (defn increase-review-count [app-state topic-id]
   (update-in app-state [:topics topic-id :review-count] inc))
 
-(defn now []
-  (-> (.toISOString (js/Date.))
-      (clojure.string/replace , #"[TZ]" " ")
-      (.slice , 0 -3)))
+(defn my-format-date [date]
+  (if (not date)
+    date ;; pass through falsey value without formatting
+    (-> (.toISOString (js/Date. date))
+        (clojure.string/replace , #"[TZ]" " ")
+        (.slice , 0 -3))))
 
 (defn review-topic! [topic-id]
-  (swap! app-state update-last-review-date topic-id (now))
+  (swap! app-state update-last-review-date topic-id (js/Date.))
   (swap! app-state increase-review-count topic-id))
 
 (defn reset-topic [app-state topic-id]
@@ -51,6 +57,13 @@
 
 (defn topic-exists? [topic-id]
   (not (nil? (get-in @app-state [:topics topic-id]))))
+
+(defn time-diff [time1 time2]
+  (if (not time2)
+    nil
+    (str (quot (- (.getTime (js/Date. time1))
+                  (.getTime (js/Date. time2)))
+               1000) " seconds")))
 
 (defn review-button [topic-id]
   [:button
@@ -70,6 +83,10 @@
                  (delete-topic! topic-id))}
    "Delete"])
 
+(defn last-review-time-row [topic-data now]
+  [:td (or (time-diff @timer (:last-review-date topic-data))
+           "-")])
+
 (defn remind-row [[topic-id topic-data]]
   [:tr
    [:td topic-id]
@@ -77,7 +94,8 @@
     [review-button topic-id]
     [reset-button topic-id]
     [delete-button topic-id]]
-   [:td (or (:last-review-date topic-data) "Never")]
+   [:td (or (my-format-date (:last-review-date topic-data)) "Never")]
+   [last-review-time-row topic-data]
    [:td (:review-count topic-data)]])
 
 (defn remind-table []
@@ -87,6 +105,7 @@
      [:th "Title"]
      [:th "Actions"]
      [:th.last-review-column "Last review"]
+     [:th "Time since last review"]
      [:th "Review count"]]]
    [:tbody
     (for [topic (:topics @app-state)]
