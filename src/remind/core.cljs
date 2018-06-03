@@ -104,7 +104,7 @@
                  (delete-topic! topic-id))}
    "Delete"])
 
-(defn last-review-time-row [topic-data now]
+(defn last-review-cell [topic-data now]
   [:td {:title (or (my-format-date (:last-review-date topic-data)) "Never reviewed")}
    (or (human-elapsed-time (time-diff @timer (:last-review-date topic-data)))
            "-")])
@@ -116,7 +116,7 @@
     [review-button topic-id]
     [reset-button topic-id]
     [delete-button topic-id]]
-   [last-review-time-row topic-data]
+   [last-review-cell topic-data]
    [:td.review-count-column (:review-count topic-data)]])
 
 (defn remind-table []
