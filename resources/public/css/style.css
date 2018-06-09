@@ -1,8 +1,20 @@
 /* some style */
 body {
-  background-color: white;
+  background-color: #f4f4f4;
   font-family: sans-serif;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+#app-body {
+  margin: 1em auto;
+  max-width: 1000px;
+}
+
+#page-title {
+  padding: 1.5em;
+  background-color: #383838;
+  color: white;
+  text-align: center;
 }
 
 /* New topic form */
@@ -29,30 +41,34 @@ body {
 
 /* Table */
 
-table#topics-table {
+#topics-table {
   width: 100%;
 }
 
-table#topics-table td {
+#topics-table th {
   text-align: center;
 }
 
-table#topics-table td {
+#topics-table td {
+  text-align: center;
+}
+
+#topics-table td {
   padding: 0.6em 0;
 }
 
-table#topics-table button {
+#topics-table button {
   font-size: 0.8em;
   margin: 0 0.1vw;
 }
 
 /* Columns */
 
-table#topics-table .title-column {
+#topics-table .title-column {
   max-width: 16vw;
 }
 
-table#topics-tabble .review-count-column {
+#topics-tabble .review-count-column {
   max-width: 10px;
 }
 
@@ -67,4 +83,20 @@ table#topics-tabble .review-count-column {
 
 #import-section button {
   margin: 0 0.2em;
+}
+
+
+.button-success {
+  background: rgb(28, 184, 65); /* this is a green */
+  color: white;
+}
+
+.button-danger {
+  background-color: rgb(255, 78, 78); /* red */
+  color: white;
+}
+
+.button-secondary {
+  background: rgb(66, 184, 221); /* this is a light blue */
+  color: white;
 }

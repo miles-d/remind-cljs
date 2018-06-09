@@ -137,12 +137,12 @@
     (sort cmp topics)))
 
 (defn review-button [topic-id]
-  [:button
+  [:button.pure-button.button-success
    {:on-click #(review-topic! topic-id)}
    "Contacted!"])
 
 (defn delete-button [topic-id]
-  [:button
+  [:button.pure-button.button-danger
    {:on-click #(if (js/confirm "Are you sure to delete this entry?")
                  (delete-topic! topic-id))}
    "Delete"])
@@ -178,7 +178,7 @@
    [:td.review-count-column (:review-count topic-data)]])
 
 (defn remind-table []
-  [:table#topics-table
+  [:table#topics-table.pure-table
    [:thead
     [:tr
      [:th.title-column "Name"]
@@ -197,36 +197,38 @@
         error-message (atom "")
         type-id (atom :vip)]
     (fn []
-      [:form#new-topic-form
-       [:label "Name: "
-        [:input {:value @input-value
-                 :on-change (fn [event]
-                              (let [new-value (.-value (.-target event))]
-                                (reset! error-message "")
-                                (reset! input-value new-value)))}]]
-       [:br]
-       [:label "Type: "
-        [:select#topic-type-select
-         {:value @type-id
-          :on-change (fn [event]
-                       (reset! type-id (.-value (.-target event))))}
-         (for [[type-id topic-type] topic-types]
-           ^{:key type-id} [:option {:value type-id} (:description topic-type)])]]
-       [:br]
-       [:button {:on-click (fn [event]
-                             (do
-                               (.preventDefault event)
-                               (cond
-                                 (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
-                                 (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
-                                 :else (do
-                                         (add-topic! (clojure.string/trim @input-value) @type-id)
-                                         (reset! input-value "")))))}
-        "Add!"]
-       [:span#new-topic-error-message @error-message]])))
+      [:div
+       [:h4 "Add a friend"]
+       [:form#new-topic-form.pure-form
+        [:label "Name: "
+         [:input {:value @input-value
+                  :on-change (fn [event]
+                               (let [new-value (.-value (.-target event))]
+                                 (reset! error-message "")
+                                 (reset! input-value new-value)))}]]
+        [:br]
+        [:label "Type: "
+         [:select#topic-type-select
+          {:value @type-id
+           :on-change (fn [event]
+                        (reset! type-id (.-value (.-target event))))}
+          (for [[type-id topic-type] topic-types]
+            ^{:key type-id} [:option {:value type-id} (:description topic-type)])]]
+        [:br]
+        [:button.pure-button {:on-click (fn [event]
+                                          (do
+                                            (.preventDefault event)
+                                            (cond
+                                              (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
+                                              (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
+                                              :else (do
+                                                      (add-topic! (clojure.string/trim @input-value) @type-id)
+                                                      (reset! input-value "")))))}
+         "Add!"]
+        [:span#new-topic-error-message @error-message]]])))
 
 (defn export-button []
-  [:button#export-btn
+  [:button#export-btn.pure-button.button-secondary
    {:on-click (fn [_]
                 (let [exported-data (str @app-state)
                       new-link (dom/createElement "a")]
@@ -245,7 +247,7 @@
 
 (defn import-button []
   [:div
-   [:button#import-button
+   [:button#import-button.pure-button.button-secondary
     {:on-click (fn [_]
                  (.click (dom/getElement "import-btn")))}
     "Import from a file"]
@@ -262,7 +264,7 @@
                                            (load-app-state! (-> e .-target .-result)))))))}]])
 
 (defn wipe-button []
-  [:button#wipe-btn
+  [:button#wipe-btn.pure-button.button-secondary
    {:on-click (fn [e]
                 (when (.confirm js/window "Are you sure? This cannot be reverted.")
                   (.clear js/localStorage)
@@ -276,11 +278,15 @@
    [wipe-button]])
 
 (defn remind-app []
-  [:div
-   [:h3 "Stay In Touch"]
-   [import-section]
-   [new-topic-input]
-   [remind-table]])
+  [:div#app
+   [:h3#page-title "Stay In Touch"]
+   [:div#app-body
+    [:div
+     [import-section]]
+    [:div
+     [new-topic-input]]
+    [:div
+     [remind-table]]]])
 
 (reagent/render-component [remind-app]
                           (. js/document (getElementById "app")))
