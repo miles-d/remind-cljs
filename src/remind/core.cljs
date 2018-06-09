@@ -215,15 +215,16 @@
           (for [[type-id topic-type] topic-types]
             ^{:key type-id} [:option {:value type-id} (:description topic-type)])]]
         [:br]
-        [:button.pure-button {:on-click (fn [event]
-                                          (do
-                                            (.preventDefault event)
-                                            (cond
-                                              (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
-                                              (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
-                                              :else (do
-                                                      (add-topic! (clojure.string/trim @input-value) @type-id)
-                                                      (reset! input-value "")))))}
+        [:button.pure-button.button-success
+         {:on-click (fn [event]
+                      (do
+                        (.preventDefault event)
+                        (cond
+                          (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
+                          (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
+                          :else (do
+                                  (add-topic! (clojure.string/trim @input-value) @type-id)
+                                  (reset! input-value "")))))}
          "Add!"]
         [:span#new-topic-error-message @error-message]]])))
 
