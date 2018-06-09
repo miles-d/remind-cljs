@@ -60,6 +60,11 @@ table#topics-tabble .review-count-column {
   background-color: #d0fce4;
 }
 
-#import-btn {
+#import-section {
+  display: flex;
   margin-bottom: 1.5em;
+}
+
+#import-section button {
+  margin: 0 0.2em;
 }

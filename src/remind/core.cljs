@@ -226,19 +226,54 @@
        [:span#new-topic-error-message @error-message]])))
 
 (defn export-button []
-  [:button#import-btn
+  [:button#export-btn
    {:on-click (fn [_]
-                (let [exported-data (.stringify js/JSON (clj->js @app-state))
+                (let [exported-data (str @app-state)
                       new-link (dom/createElement "a")]
-                  (set! (.-href new-link) (str "data:application/json;charset=utf-8," (js/encodeURIComponent exported-data)))
-                  (set! (.-download new-link) (str "stay_in_touch.json"))
+                  (set! (.-href new-link) (str "data:text/plain;charset=utf-8," (js/encodeURIComponent exported-data)))
+                  (set! (.-download new-link) (str "stay_in_touch.edn"))
                   (.click new-link)
                   (dom/removeNode new-link)))}
-   "Export your data to a file"])
+   "Export data to a file"])
+
+(defn load-app-state! [edn]
+  (try
+    (let [parsed (cljs.reader/read-string edn)]
+      (reset! app-state parsed))
+    (catch js/Error e
+      (js/alert "Could not import from the file."))))
+
+(defn import-button []
+  [:div
+   [:button#import-button
+    {:on-click (fn [_]
+                 (.click (dom/getElement "import-btn")))}
+    "Import from a file"]
+   [:input#import-btn
+    {:type :file
+     :style {:display "none"}
+     :on-change (fn [e]
+                  (let [file (aget (.-files (.-target e)) 0)
+                        reader (js/FileReader.)]
+                    (when file
+                      (.readAsText reader file)
+                      (.addEventListener reader "load"
+                                         (fn [e]
+                                           (load-app-state! (-> e .-target .-result)))))))}]])
+
+(defn wipe-button []
+  [:button#wipe-btn
+   {:on-click (fn [e]
+                (when (.confirm js/window "Are you sure? This cannot be reverted.")
+                  (.clear js/localStorage)
+                  (reset! app-state {:topics {}})))}
+   "Clear all data"])
 
 (defn import-section []
-  [:div
-   [export-button]])
+  [:div#import-section
+   [export-button]
+   [import-button]
+   [wipe-button]])
 
 (defn remind-app []
   [:div
