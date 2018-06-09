@@ -19,16 +19,16 @@
 (defn reset-state! [] (reset! app-state {:topics {}}))
 
 (def topic-types {:vip       {:interval-days 21
-                              :description "Very important people. Contact every three weeks."
+                              :description "Very important people. Contact every 3 weeks."
                               :short-description "VIP"}
                   :important {:interval-days 60
-                              :description "Important people. Contact every two months."
+                              :description "Important people. Contact every 2 months."
                               :short-description "Important"}
                   :regular   {:interval-days (* 30 6)
-                              :description "Most people. Contact every six months."
+                              :description "Most people. Contact every 6 months."
                               :short-description "Regular"}
                   :demoted   {:interval-days 365
-                              :description "Demoted people. Contact once a year, to make sure you still have their correct info."
+                              :description "Demoted people. Contact once a year."
                               :short-description "Demoted"}})
 
 (add-watch app-state
@@ -192,41 +192,45 @@
       ^{:key (first topic)} [remind-row topic])]]
   )
 
-(defn new-topic-input []
+(defn new-topic-form []
   (let [input-value (atom "")
         error-message (atom "")
         type-id (atom :vip)]
     (fn []
       [:div
        [:h4 "Add a friend"]
-       [:form#new-topic-form.pure-form
-        [:label "Name: "
-         [:input {:value @input-value
-                  :on-change (fn [event]
-                               (let [new-value (.-value (.-target event))]
-                                 (reset! error-message "")
-                                 (reset! input-value new-value)))}]]
-        [:br]
-        [:label "Type: "
-         [:select#topic-type-select
+       [:form#new-topic-form.pure-form.pure-form-aligned
+        [:div.pure-control-group
+         [:label {:for "new-topic-name-input"} "Name:"]
+         [:input#new-topic-name-input.pure-input-1-2
+          {:value @input-value
+           :on-change (fn [event]
+                        (let [new-value (.-value (.-target event))]
+                          (reset! error-message "")
+                          (reset! input-value new-value)))}]]
+
+        [:div.pure-control-group
+         [:label {:for "topic-type-select"} "Type:"]
+         [:select#topic-type-select.pure-input-1-2
           {:value @type-id
            :on-change (fn [event]
                         (reset! type-id (.-value (.-target event))))}
           (for [[type-id topic-type] topic-types]
             ^{:key type-id} [:option {:value type-id} (:description topic-type)])]]
-        [:br]
-        [:button.pure-button.button-success
-         {:on-click (fn [event]
-                      (do
-                        (.preventDefault event)
-                        (cond
-                          (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
-                          (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
-                          :else (do
-                                  (add-topic! (clojure.string/trim @input-value) @type-id)
-                                  (reset! input-value "")))))}
-         "Add!"]
-        [:span#new-topic-error-message @error-message]]])))
+
+        [:div.pure-controls
+         [:button.pure-button.button-success
+          {:on-click (fn [event]
+                       (do
+                         (.preventDefault event)
+                         (cond
+                           (clojure.string/blank? @input-value) (reset! error-message "Cannot add empty topic.")
+                           (topic-exists? @input-value) (reset! error-message "Topic with this title already exists!")
+                           :else (do
+                                   (add-topic! (clojure.string/trim @input-value) @type-id)
+                                   (reset! input-value "")))))}
+          "Add!"]
+         [:span#new-topic-error-message @error-message]]]])))
 
 (defn export-button []
   [:button#export-btn.pure-button.button-secondary
@@ -285,7 +289,7 @@
     [:div
      [import-section]]
     [:div
-     [new-topic-input]]
+     [new-topic-form]]
     [:div
      [remind-table]]]])
 

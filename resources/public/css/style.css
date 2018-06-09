@@ -29,14 +29,8 @@ body {
 
 #new-topic-error-message {
   margin-left: 1em;
-  margin-top: 1em;
   color: red;
   font-size: .9em;
-}
-
-#topic-type-select {
-  margin-left: 1em;
-  margin-top: 10px;
 }
 
 /* Table */
@@ -73,7 +67,7 @@ body {
 }
 
 #topics-table tr.pending {
-  background-color: #d0fce4;
+  background-color: #ffe6c8;
 }
 
 #import-section {
