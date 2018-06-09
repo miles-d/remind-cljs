@@ -18,12 +18,12 @@
                          "new" newer-topic
                          "old" older-topic})))))
 
-  (testing "puts topics without last-review-date as last"
+  (testing "puts topics without last-review-date as first"
     (let [topic-without-date {:type-id :vip :last-review-date nil}
           topic-with-date    {:type-id :vip :last-review-date (js/Date. "2018-01-01")}]
       (is
-        (= [["with date" topic-with-date]
-            ["without date" topic-without-date]]
+        (= [["without date" topic-without-date]
+            ["with date" topic-with-date]]
            (sort-topics {"without date" topic-without-date
                          "with date" topic-with-date}))))))
 
@@ -35,6 +35,6 @@
           topic-with-empty-date {:type-id :vip :last-review-date nil}]
       (is (= true (topic-pending? pending-topic now)))
       (is (= false (topic-pending? not-pending-topic now)))
-      (is (= false (topic-pending? topic-with-empty-date now))))))
+      (is (= true (topic-pending? topic-with-empty-date now))))))
 
 (run-tests)

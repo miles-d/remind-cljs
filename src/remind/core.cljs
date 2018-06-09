@@ -121,13 +121,13 @@
   (let [next-time (next-review-time topic-data)]
     (if next-time
       (< next-time now)
-      false)))
+      true)))
 
 (defn sort-topics [topics]
   (let [cmp (fn [[_ topic-a] [_ topic-b]]
               (cond
-                (nil? (:last-review-date topic-a)) false
-                (nil? (:last-review-date topic-b)) true
+                (nil? (:last-review-date topic-a)) true
+                (nil? (:last-review-date topic-b)) false
                 :else (let [t1 (next-review-time topic-a)
                             t2 (next-review-time topic-b)]
                         (< (.getTime t1)
@@ -158,7 +158,7 @@
     [:td
      {:title (or (my-format-date next-review-absolute))}
      (cond
-       (< diff-mili 0) "Pending!"
+       (topic-pending? topic (js/Date.)) "Pending!"
        (not next-review-absolute) "-"
        :else (str "in " (human-elapsed-time diff-mili)))]))
 
