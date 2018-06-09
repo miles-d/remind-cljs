@@ -1,6 +1,6 @@
 (ns ^:figwheel-always remind.core-test
   (:require  [cljs.test :refer-macros  [deftest is testing run-tests]]
-            [remind.core :refer [sort-topics add-topic add-topic]]))
+            [remind.core :refer [sort-topics add-topic add-topic topic-pending?]]))
 
 (deftest test-foo
   (is (= true true)))
@@ -26,5 +26,15 @@
             ["without date" topic-without-date]]
            (sort-topics {"without date" topic-without-date
                          "with date" topic-with-date}))))))
+
+(deftest topic-pending?-test
+  (testing "tells if topic should be reviewed"
+    (let [now (js/Date. "2018-01-01")
+          pending-topic {:type-id :vip :last-review-date (js/Date. "2017-01-01")}
+          not-pending-topic {:type-id :vip :last-review-date (js/Date. "2018-01-01")}
+          topic-with-empty-date {:type-id :vip :last-review-date nil}]
+      (is (= true (topic-pending? pending-topic now)))
+      (is (= false (topic-pending? not-pending-topic now)))
+      (is (= false (topic-pending? topic-with-empty-date now))))))
 
 (run-tests)

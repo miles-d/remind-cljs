@@ -117,6 +117,12 @@
         next-review-absolute (add-days (:last-review-date topic) interval-days) ]
     next-review-absolute))
 
+(defn topic-pending? [topic-data now]
+  (let [next-time (next-review-time topic-data)]
+    (if next-time
+      (< next-time now)
+      false)))
+
 (defn sort-topics [topics]
   (let [cmp (fn [[_ topic-a] [_ topic-b]]
               (cond
@@ -158,6 +164,7 @@
 
 (defn remind-row [[topic-id topic-data]]
   [:tr
+   {:class (when (topic-pending? topic-data (js/Date.)) "pending")}
    [:td.title-column topic-id]
    [:td (or (:short-description (get topic-types (:type-id topic-data)))
             "")]

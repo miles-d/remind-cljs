@@ -55,3 +55,7 @@ table#topics-table .title-column {
 table#topics-tabble .review-count-column {
   max-width: 10px;
 }
+
+#topics-table tr.pending {
+  background-color: #d0fce4;
+}
