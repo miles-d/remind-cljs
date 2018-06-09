@@ -2,14 +2,19 @@
     (:require [reagent.core :as reagent :refer [atom]]
               [cljs.reader]))
 
+
+
 (enable-console-print!)
 (def log (.-log js/console))
 
-(defonce app-state (atom (cljs.reader/read-string (.getItem js/localStorage "appStateV1"))))
+(defonce app-state (atom (or (cljs.reader/read-string (.getItem js/localStorage "appStateV1"))
+                             {:topics {}})))
 (defonce timer (atom (js/Date.)))
 (defonce timer-updater (js/setInterval
                          #(reset! timer (js/Date.))
                          1000))
+
+(defn reset-state! [] (reset! app-state {:topics {}}))
 
 (def topic-types {:vip       {:interval-days 21
                               :description "Very important people. Contact every three weeks."
@@ -29,7 +34,9 @@
            (fn [_ _ _ new-state]
              (.setItem js/localStorage "appStateV1" new-state)))
 
-(def empty-topic {:last-review-date nil :review-count 0})
+(def empty-topic {:last-review-date nil
+                  :review-count 0
+                  :type-id nil})
 
 (defn add-topic [app-state title type-id]
   (-> app-state
@@ -38,9 +45,6 @@
 
 (defn add-topic! [title type-id]
   (swap! app-state #(add-topic % title (keyword type-id))))
-
-(defn get-topic [app-state title]
-  (get-in app-state [:topics title]))
 
 (defn update-last-review-date [app-state topic-id now]
   (assoc-in app-state [:topics topic-id :last-review-date] now))
@@ -108,6 +112,22 @@
         (< days 35) (str days " days")
         :else (str weeks " weeks")))))
 
+(defn next-review-time [topic]
+  (let [interval-days (:interval-days (get topic-types (:type-id topic)))
+        next-review-absolute (add-days (:last-review-date topic) interval-days) ]
+    next-review-absolute))
+
+(defn sort-topics [topics]
+  (let [cmp (fn [[_ topic-a] [_ topic-b]]
+              (cond
+                (nil? (:last-review-date topic-a)) false
+                (nil? (:last-review-date topic-b)) true
+                :else (let [t1 (next-review-time topic-a)
+                            t2 (next-review-time topic-b)]
+                        (< (.getTime t1)
+                           (.getTime t2)))))]
+    (sort cmp topics)))
+
 (defn review-button [topic-id]
   [:button
    {:on-click #(review-topic! topic-id)}
@@ -127,8 +147,7 @@
      "-")])
 
 (defn next-review-cell [topic]
-  (let [interval-days (:interval-days (get topic-types (:type-id topic)))
-        next-review-absolute (add-days (:last-review-date topic) interval-days)
+  (let [next-review-absolute (next-review-time topic)
         diff-mili (time-diff next-review-absolute @timer)]
     [:td
      {:title (or (my-format-date next-review-absolute))}
@@ -160,7 +179,7 @@
      [:th "Next contact"]
      [:th.review-count-column "Times contacted"]]]
    [:tbody
-    (for [topic (:topics @app-state)]
+    (for [topic (sort-topics (:topics @app-state))]
       ^{:key (first topic)} [remind-row topic])]]
   )
 
