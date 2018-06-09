@@ -59,3 +59,7 @@ table#topics-tabble .review-count-column {
 #topics-table tr.pending {
   background-color: #d0fce4;
 }
+
+#import-btn {
+  margin-bottom: 1.5em;
+}

@@ -1,6 +1,8 @@
 (ns remind.core
     (:require [reagent.core :as reagent :refer [atom]]
-              [cljs.reader]))
+              [cljs.reader]
+              [goog.dom :as dom]
+              [cljs.repl :refer [doc dir]]))
 
 
 
@@ -223,9 +225,25 @@
         "Add!"]
        [:span#new-topic-error-message @error-message]])))
 
+(defn export-button []
+  [:button#import-btn
+   {:on-click (fn [_]
+                (let [exported-data (.stringify js/JSON (clj->js @app-state))
+                      new-link (dom/createElement "a")]
+                  (set! (.-href new-link) (str "data:application/json;charset=utf-8," (js/encodeURIComponent exported-data)))
+                  (set! (.-download new-link) (str "stay_in_touch.json"))
+                  (.click new-link)
+                  (dom/removeNode new-link)))}
+   "Export your data to a file"])
+
+(defn import-section []
+  [:div
+   [export-button]])
+
 (defn remind-app []
   [:div
    [:h3 "Stay In Touch"]
+   [import-section]
    [new-topic-input]
    [remind-table]])
 
