@@ -12,8 +12,8 @@ body {
 
 #page-title {
   padding: 1.5em;
-  background-color: #383838;
-  color: white;
+  background-color: #685454;
+  color: #ffe6c8;
   text-align: center;
 }
 
@@ -87,16 +87,19 @@ body {
 
 
 .button-success {
-  background: rgb(28, 184, 65); /* this is a green */
-  color: white;
+  background: rgb(255, 230, 200); /* this is a green */
+  color: black;
+  border: 0.5px solid #685454;
 }
 
 .button-danger {
-  background-color: rgb(255, 78, 78); /* red */
+  background-color: rgb(217, 87, 87); /* red */
   color: white;
+  border: 0.5px solid black;
 }
 
 .button-secondary {
-  background: rgb(66, 184, 221); /* this is a light blue */
+  background: rgb(71, 157, 184); /* this is a light blue */
   color: white;
+  border: 0.5px solid black;
 }
