@@ -198,7 +198,8 @@
         type-id (atom :vip)]
     (fn []
       [:div
-       [:h4 "Add a friend"]
+       [:h4 "Add a friend."]
+       [:h5 "The table will suggest you when you should contact them, so you don't forget about each other!"]
        [:form#new-topic-form.pure-form.pure-form-aligned
         [:div.pure-control-group
          [:label {:for "new-topic-name-input"} "Name:"]
