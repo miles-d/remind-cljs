@@ -26,6 +26,9 @@
                 ;; will cause figwheel to inject the figwheel client
                 ;; into your build
                 :figwheel {:on-jsload "remind.core/on-js-reload"
+                           ; for work on remote server
+                           ; :websocket-url "ws://10.8.0.1:3449/figwheel-ws"
+
                            ;; :open-urls will pop open your application
                            ;; in the default browser once Figwheel has
                            ;; started and compiled your application.
